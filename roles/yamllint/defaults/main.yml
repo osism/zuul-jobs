@@ -3,4 +3,4 @@ python_venv_dir: /tmp/venv
 zuul_work_dir: "{{ zuul.project.src_dir }}"
 
 # renovate: datasource=pypi depName=yamllint
-yamllint_version: '1.36.2'
+yamllint_version: '1.37.0'
