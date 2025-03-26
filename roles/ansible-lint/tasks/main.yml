@@ -1,13 +1,13 @@
 ---
 - name: Pull ansible-lint image
   containers.podman.podman_image:
-    name: osism.harbor.regio.digital/osism/ansible-lint:latest
+    name: registry.osism.tech/osism/ansible-lint:latest
   retries: 3
   delay: 3
 
 - name: Run ansible-lint
   ansible.builtin.command:
-    cmd: "podman run --volume ./{{ zuul.project.src_dir }}:/zuul:rw osism.harbor.regio.digital/osism/ansible-lint:latest"
+    cmd: "podman run --volume ./{{ zuul.project.src_dir }}:/zuul:rw registry.osism.tech/osism/ansible-lint:latest"
   register: result
   failed_when: "'0 failure(s)' not in result.stdout"
   changed_when: false
