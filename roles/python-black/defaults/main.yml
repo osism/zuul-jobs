@@ -4,5 +4,5 @@ python_venv_dir: /tmp
 zuul_work_dir: "{{ zuul.project.src_dir }}"
 
 # renovate: datasource=pypi depName=black
-black_version: '24.8.0'
+black_version: '26.3.1'
 black_excluded_dir: ""
