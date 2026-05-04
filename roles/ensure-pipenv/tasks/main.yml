@@ -1,0 +1,6 @@
+---
+- name: Install pipenv
+  ansible.builtin.pip:
+    name: "pipenv=={{ pipenv_version }}"
+    virtualenv: "{{ python_venv_dir }}"
+    virtualenv_command: 'python3 -m venv'
