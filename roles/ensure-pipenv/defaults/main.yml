@@ -1,0 +1,6 @@
+---
+# defaults file for ensure-pipenv
+python_venv_dir: /tmp/venv
+
+# renovate: datasource=pypi depName=pipenv
+pipenv_version: '2026.5.2'
