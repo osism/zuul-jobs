@@ -3,4 +3,4 @@
 python_venv_dir: /tmp/venv
 
 # renovate: datasource=pypi depName=pipenv
-pipenv_version: '2026.5.2'
+pipenv_version: '2026.6.1'
