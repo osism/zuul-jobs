@@ -73,12 +73,28 @@
     parent: dnm-trixie-probe
     nodeset: debian-bookworm
 
+- job:
+    name: dnm-ansible-lint-rootless
+    description: DNM ansible-lint with ensure_podman_rootless on trixie
+    parent: ansible-lint
+    nodeset: debian-trixie
+    vars:
+      ensure_podman_rootless: true
+
+- job:
+    name: dnm-ansible-lint-rootless-bookworm
+    description: DNM ansible-lint with ensure_podman_rootless on bookworm
+    parent: dnm-ansible-lint-rootless
+    nodeset: debian-bookworm
+
 - project:
     merge-mode: squash-merge
     check:
       jobs:
         - dnm-trixie-probe
         - dnm-trixie-probe-bookworm
+        - dnm-ansible-lint-rootless
+        - dnm-ansible-lint-rootless-bookworm
     gate:
       jobs:
         - ansible-lint

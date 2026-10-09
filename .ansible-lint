@@ -3,6 +3,7 @@ mock_roles:
   - ensure-podman
 exclude_paths:
   - playbooks/publish-pypi-package/post-run.yaml
+  - playbooks/dnm-trixie-probe/
 skip_list:
   - role-name
   - var-naming[no-role-prefix]
