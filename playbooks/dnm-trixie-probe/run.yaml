@@ -1,0 +1,85 @@
+---
+# DNM: compare a bookworm and a trixie node for the two failures the
+# trixie default nodeset introduced. Every probe tolerates failure so
+# that both nodes report all results; read them in the job output.
+- name: Probe node differences
+  hosts: all
+
+  tasks:
+    # Runs first, before this playbook installs anything, so it shows
+    # what the image itself ships.
+    - name: Probe python libraries on the pristine node
+      ansible.builtin.shell:
+        executable: /bin/bash
+        cmd: |
+          . /etc/os-release
+          echo "== $PRETTY_NAME"
+          echo "== apt recommends/suggests"
+          apt-config dump | grep -i -E 'Install-(Recommends|Suggests)' || echo "(not set)"
+          for m in packaging pkg_resources; do
+            if f=$(python3 -c "import $m; print($m.__file__)" 2>/dev/null); then
+              p=$(dpkg -S "$f" 2>/dev/null | cut -d: -f1)
+              echo "== $m: $f (package: ${p:-not from a package})"
+              [ -n "$p" ] && apt-cache rdepends --installed "$p"
+            else
+              echo "== $m: NOT importable"
+            fi
+          done
+          echo "== installed python3 packages"
+          dpkg-query -W -f '${Package} ${Version}\n' 'python3*' 2>/dev/null
+      changed_when: false
+
+    # The same two tasks as container-image-kolla-ansible playbooks/pre.yml.
+    - name: Install the packages kolla-ansible's pre.yml installs
+      become: true
+      ansible.builtin.apt:
+        name:
+          - python3-docker
+          - python3-requests
+        update_cache: true
+
+    - name: Reproduce the dtrack-auditor pip task
+      ansible.builtin.pip:
+        name: dtrack-auditor
+        virtualenv: /tmp/venv
+        virtualenv_command: "python3 -m venv"
+      register: probe_pip
+      ignore_errors: true
+
+    - name: Install podman with the ensure-podman defaults
+      ansible.builtin.import_role:
+        name: ensure-podman
+
+    # A pull runs in the host network namespace and needs no pasta, so
+    # pulling first keeps a registry failure apart from a pasta failure.
+    - name: Pull the test image
+      ansible.builtin.command: podman pull quay.io/libpod/alpine:latest
+      register: probe_podman_pull
+      changed_when: false
+      ignore_errors: true
+
+    - name: Run a rootless container with the default packages
+      ansible.builtin.command: podman run --rm quay.io/libpod/alpine:latest true
+      register: probe_podman_default
+      changed_when: false
+      ignore_errors: true
+
+    - name: Install passt
+      become: true
+      ansible.builtin.apt:
+        name: passt
+
+    - name: Run a rootless container with passt installed
+      ansible.builtin.command: podman run --rm quay.io/libpod/alpine:latest true
+      register: probe_podman_passt
+      changed_when: false
+      ignore_errors: true
+
+    - name: Summarize
+      ansible.builtin.debug:
+        msg:
+          - "distribution: {{ ansible_distribution }} {{ ansible_distribution_release }}"
+          - "pip dtrack-auditor: {{ 'FAILED: ' ~ probe_pip.msg if probe_pip is failed else 'ok' }}"
+          - "podman pull: {{ 'FAILED: ' ~ (probe_podman_pull.stderr | default(probe_podman_pull.msg)) if probe_podman_pull is failed else 'ok' }}"
+          - "podman run, default packages: {{ 'FAILED: ' ~ (probe_podman_default.stderr | default(probe_podman_default.msg)) if probe_podman_default is failed else 'ok' }}"
+          - "podman run, with passt: {{ 'FAILED: ' ~ (probe_podman_passt.stderr | default(probe_podman_passt.msg)) if probe_podman_passt is failed else 'ok' }}"

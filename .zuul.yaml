@@ -61,14 +61,24 @@
     description: yamllint job provided by OSISM
     run: playbooks/yamllint/run.yaml
 
+- job:
+    name: dnm-trixie-probe
+    description: DNM probe of trixie node differences
+    run: playbooks/dnm-trixie-probe/run.yaml
+    nodeset: debian-trixie
+
+- job:
+    name: dnm-trixie-probe-bookworm
+    description: DNM probe of trixie node differences, bookworm baseline
+    parent: dnm-trixie-probe
+    nodeset: debian-bookworm
+
 - project:
     merge-mode: squash-merge
     check:
       jobs:
-        - ansible-lint
-        - flake8
-        - python-black
-        - yamllint
+        - dnm-trixie-probe
+        - dnm-trixie-probe-bookworm
     gate:
       jobs:
         - ansible-lint
