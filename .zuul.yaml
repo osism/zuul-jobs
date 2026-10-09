@@ -74,17 +74,15 @@
     nodeset: debian-bookworm
 
 - job:
-    name: dnm-ansible-lint-rootless
-    description: DNM ansible-lint with ensure_podman_rootless on trixie
+    name: dnm-ansible-lint-passt
+    description: DNM ansible-lint with passt installed, on trixie
     parent: ansible-lint
     nodeset: debian-trixie
-    vars:
-      ensure_podman_rootless: true
 
 - job:
-    name: dnm-ansible-lint-rootless-bookworm
-    description: DNM ansible-lint with ensure_podman_rootless on bookworm
-    parent: dnm-ansible-lint-rootless
+    name: dnm-ansible-lint-passt-bookworm
+    description: DNM ansible-lint with passt installed, on bookworm
+    parent: dnm-ansible-lint-passt
     nodeset: debian-bookworm
 
 - project:
@@ -93,8 +91,8 @@
       jobs:
         - dnm-trixie-probe
         - dnm-trixie-probe-bookworm
-        - dnm-ansible-lint-rootless
-        - dnm-ansible-lint-rootless-bookworm
+        - dnm-ansible-lint-passt
+        - dnm-ansible-lint-passt-bookworm
     gate:
       jobs:
         - ansible-lint

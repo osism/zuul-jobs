@@ -8,6 +8,16 @@
       ansible.builtin.apt:
         update_cache: true
 
+    # ansible-lint runs podman as the unprivileged zuul user, and podman 5
+    # (trixie and later) uses pasta for rootless networking. The
+    # ensure-podman default package set has no passt, and its
+    # ensure_podman_rootless mode drops slirp4netns, which podman 4
+    # (bookworm) still needs.
+    - name: Install passt for rootless podman networking
+      become: true
+      ansible.builtin.apt:
+        name: passt
+
     - name: Apply ensure-podman role
       ansible.builtin.import_role:
         name: ensure-podman
