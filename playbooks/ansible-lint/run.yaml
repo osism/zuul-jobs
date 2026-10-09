@@ -8,9 +8,12 @@
       ansible.builtin.apt:
         update_cache: true
 
+    # The ansible-lint role runs podman as the unprivileged zuul user.
     - name: Apply ensure-podman role
       ansible.builtin.import_role:
         name: ensure-podman
+      vars:
+        ensure_podman_rootless: true
 
     - name: Apply ansible-lint -podman role
       ansible.builtin.import_role:
